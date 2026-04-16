@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Hash } from 'lucide-react'
 import type { AgwsAgent, AgwsChannel } from '@prisma/client'
 
@@ -6,9 +7,11 @@ interface WorkspaceHeaderProps {
   channel?: AgwsChannel | null
   title?: string
   subtitle?: string
+  icon?: ReactNode
+  actions?: ReactNode
 }
 
-export function WorkspaceHeader({ agent, channel, title, subtitle }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ agent, channel, title, subtitle, icon, actions }: WorkspaceHeaderProps) {
   return (
     <header className="flex items-center gap-3 px-6 h-14 border-b border-white/5 bg-[#0f0f18] flex-shrink-0">
       {channel ? (
@@ -31,13 +34,16 @@ export function WorkspaceHeader({ agent, channel, title, subtitle }: WorkspaceHe
               <span>{agent.name}</span>
             </div>
           )}
+          {actions && <div className="flex items-center gap-2 ml-auto">{actions}</div>}
         </>
       ) : title ? (
         <>
+          {icon && <div className="text-white/40 shrink-0">{icon}</div>}
           <div className="flex-1 min-w-0">
             <h1 className="text-sm font-semibold text-white">{title}</h1>
             {subtitle && <p className="text-xs text-white/30">{subtitle}</p>}
           </div>
+          {actions && <div className="flex items-center gap-2 ml-auto">{actions}</div>}
         </>
       ) : (
         <div className="flex-1">

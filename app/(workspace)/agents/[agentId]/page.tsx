@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { canAccessAgent } from '@/lib/access'
 import { prisma } from '@/lib/prisma'
 import { AgentHeader } from '@/components/agents/AgentHeader'
-import { WorkspaceHeader } from '@/components/layout/WorkspaceHeader'
+import { WorkspaceHeader } from '@/components/workspace/WorkspaceHeader'
 import { Hash, MessageSquare, Bot, ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
 

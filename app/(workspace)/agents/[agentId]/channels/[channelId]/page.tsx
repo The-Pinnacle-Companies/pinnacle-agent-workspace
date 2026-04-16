@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Hash } from 'lucide-react'
 import { MessageList } from '@/components/chat/MessageList'
 import { MessageComposer } from '@/components/chat/MessageComposer'
-import { WorkspaceHeader } from '@/components/layout/WorkspaceHeader'
+import { WorkspaceHeader } from '@/components/workspace/WorkspaceHeader'
 import type { MessageData } from '@/components/chat/Message'
 import type { PendingFile } from '@/components/chat/MessageComposer'
 

@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { WorkspaceHeader } from '@/components/layout/WorkspaceHeader'
+import { WorkspaceHeader } from '@/components/workspace/WorkspaceHeader'
 import { Users, Plus, Shield } from 'lucide-react'
 import type { Metadata } from 'next'
 

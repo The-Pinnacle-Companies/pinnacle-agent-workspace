@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { WorkspaceHeader } from '@/components/layout/WorkspaceHeader'
+import { WorkspaceHeader } from '@/components/workspace/WorkspaceHeader'
 import { Shield, Bot, Users, Activity, ChevronRight } from 'lucide-react'
 
 export default async function AdminPage() {

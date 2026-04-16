@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getUserAgents } from '@/lib/access'
 import { prisma } from '@/lib/prisma'
-import { WorkspaceHeader } from '@/components/layout/WorkspaceHeader'
+import { WorkspaceHeader } from '@/components/workspace/WorkspaceHeader'
 import { Home, Hash, MessageSquare, ChevronRight } from 'lucide-react'
 
 export default async function HomePage() {
