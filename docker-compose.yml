@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: agws_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agws_user
+      POSTGRES_PASSWORD: agws_password
+      POSTGRES_DB: agent_workspace
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U agws_user -d agent_workspace']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agws_app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://agws_user:agws_password@postgres:5432/agent_workspace?schema=public
+      NODE_ENV: production
+    env_file:
+      - .env.local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:

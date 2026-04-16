@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark theme as default */
+    --background: 222 10% 6%;
+    --foreground: 210 20% 90%;
+    --card: 222 10% 9%;
+    --card-foreground: 210 20% 90%;
+    --popover: 222 10% 9%;
+    --popover-foreground: 210 20% 90%;
+    --primary: 263 70% 57%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 10% 14%;
+    --secondary-foreground: 210 20% 85%;
+    --muted: 222 10% 14%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 222 10% 16%;
+    --accent-foreground: 210 20% 90%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 10% 16%;
+    --input: 222 10% 14%;
+    --ring: 263 70% 57%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-workspace-bg text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-workspace-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-workspace-active;
+  }
+}
+
+@layer utilities {
+  /* Prose reset for dark theme */
+  .prose-workspace {
+    @apply prose prose-invert max-w-none;
+    --tw-prose-body: theme(colors.slate.300);
+    --tw-prose-headings: theme(colors.white);
+    --tw-prose-links: theme(colors.violet.400);
+    --tw-prose-bold: theme(colors.slate.100);
+    --tw-prose-code: theme(colors.violet.300);
+    --tw-prose-pre-bg: theme(colors.workspace.card);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-violet-400 to-purple-300 bg-clip-text text-transparent;
+  }
+
+  /* Glow effects */
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+
+  .glow-purple-sm {
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+  }
+
+  /* Smooth transitions */
+  .transition-layout {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  /* Sidebar item active state */
+  .sidebar-item {
+    @apply flex items-center gap-2 px-3 py-1.5 rounded-md text-sm cursor-pointer
+           text-slate-400 hover:text-slate-200 hover:bg-workspace-hover
+           transition-colors duration-150;
+  }
+
+  .sidebar-item-active {
+    @apply bg-workspace-active text-white font-medium;
+  }
+
+  /* Message bubble */
+  .message-bubble {
+    @apply rounded-2xl px-4 py-3 max-w-2xl;
+  }
+
+  /* Channel name hash */
+  .channel-hash {
+    @apply text-slate-500 font-medium mr-1;
+  }
+}
+
+/* Thinking indicator animation */
+@keyframes thinking-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes thinking-breathe {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.thinking-orb {
+  animation: thinking-breathe 2s ease-in-out infinite;
+  background: linear-gradient(135deg, #7C3AED, #a855f7, #7C3AED);
+  background-size: 200% 200%;
+  animation: thinking-breathe 2s ease-in-out infinite, gradient-shift 3s linear infinite;
+}
+
+/* Word-by-word streaming animation */
+@keyframes word-appear {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.streaming-word {
+  animation: word-appear 0.12s ease-out forwards;
+  display: inline;
+}
+
+/* Page transition */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}

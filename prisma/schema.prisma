@@ -1,0 +1,322 @@
+// schema.prisma
+// All tables use prefix agws_ for isolation from legacy tables
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────
+// IDENTITY
+// ──────────────────────────────────────────────────────────────
+
+model AgwsUser {
+  id              String        @id @default(cuid())
+  entraId         String        @unique // Entra object ID
+  email           String        @unique
+  displayName     String
+  avatarUrl       String?
+  role            PlatformRole  @default(MEMBER)
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  groupMemberships AgwsUserGroup[]
+  messages         AgwsMessage[]
+  agentOverrides   AgwsUserAgentOverride[]
+  dmConversations  AgwsConversation[]      @relation("DmUser")
+  auditLogs        AgwsAuditLog[]
+  reactions        AgwsReaction[]
+
+  @@map("agws_users")
+}
+
+model AgwsEntraGroup {
+  id          String   @id @default(cuid())
+  entraId     String   @unique // Entra group object ID
+  displayName String
+  syncedAt    DateTime @default(now())
+
+  members  AgwsUserGroup[]
+  policies AgwsAccessPolicy[]
+
+  @@map("agws_entra_groups")
+}
+
+model AgwsUserGroup {
+  userId  String
+  groupId String
+
+  user  AgwsUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group AgwsEntraGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, groupId])
+  @@map("agws_user_groups")
+}
+
+enum PlatformRole {
+  MEMBER
+  AGENT_ADMIN
+  PLATFORM_ADMIN
+}
+
+// ──────────────────────────────────────────────────────────────
+// AGENTS
+// ──────────────────────────────────────────────────────────────
+
+model AgwsAgent {
+  id              String      @id @default(cuid())
+  slug            String      @unique // e.g. "friday"
+  name            String              // e.g. "Friday"
+  description     String?
+  shortTagline    String?             // e.g. "Marketing AI"
+  avatarUrl       String?
+  brandColor      String?             // hex, e.g. "#7C3AED"
+  brandColorDark  String?
+  status          AgentStatus @default(ACTIVE)
+  openclawGateway String?             // e.g. "https://friday.collectivedg.com"
+  openclawAgentId String?             // internal ID in OpenClaw
+  adapterType     String      @default("openclaw")
+  adapterConfig   Json?               // flexible config blob
+  ownerTeam       String?
+  capabilities    String[]    @default([])
+  sortOrder       Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  subAgents      AgwsSubAgent[]
+  channels       AgwsChannel[]
+  accessPolicies AgwsAccessPolicy[]
+  userOverrides  AgwsUserAgentOverride[]
+  conversations  AgwsConversation[]
+
+  @@map("agws_agents")
+}
+
+model AgwsSubAgent {
+  id              String      @id @default(cuid())
+  agentId         String
+  slug            String
+  name            String
+  description     String?
+  avatarUrl       String?
+  brandColor      String?
+  status          AgentStatus @default(ACTIVE)
+  openclawAgentId String?
+  adapterConfig   Json?
+  capabilities    String[]    @default([])
+  sortOrder       Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  agent         AgwsAgent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  conversations AgwsConversation[]
+
+  @@unique([agentId, slug])
+  @@map("agws_sub_agents")
+}
+
+enum AgentStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+// ──────────────────────────────────────────────────────────────
+// ACCESS CONTROL
+// ──────────────────────────────────────────────────────────────
+
+model AgwsAccessPolicy {
+  id        String          @id @default(cuid())
+  agentId   String
+  groupId   String
+  role      AgentAccessRole @default(MEMBER)
+  createdAt DateTime        @default(now())
+
+  agent AgwsAgent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  group AgwsEntraGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, groupId])
+  @@map("agws_access_policies")
+}
+
+model AgwsUserAgentOverride {
+  id        String         @id @default(cuid())
+  userId    String
+  agentId   String
+  access    OverrideAccess
+  grantedBy String
+  expiresAt DateTime?
+  reason    String?
+  createdAt DateTime       @default(now())
+
+  user  AgwsUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent AgwsAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId])
+  @@map("agws_user_agent_overrides")
+}
+
+enum AgentAccessRole {
+  MEMBER
+  AGENT_ADMIN
+}
+
+enum OverrideAccess {
+  GRANT
+  REVOKE
+}
+
+// ──────────────────────────────────────────────────────────────
+// CHANNELS
+// ──────────────────────────────────────────────────────────────
+
+model AgwsChannel {
+  id          String   @id @default(cuid())
+  agentId     String
+  slug        String
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agent         AgwsAgent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  conversations AgwsConversation[]
+
+  @@unique([agentId, slug])
+  @@map("agws_channels")
+}
+
+// ──────────────────────────────────────────────────────────────
+// CONVERSATIONS (threads in channels, or DMs)
+// ──────────────────────────────────────────────────────────────
+
+model AgwsConversation {
+  id            String           @id @default(cuid())
+  type          ConversationType
+  agentId       String?
+  subAgentId    String?
+  channelId     String?
+  dmUserId      String?
+  title         String?
+  isArchived    Boolean          @default(false)
+  lastMessageAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  agent    AgwsAgent?    @relation(fields: [agentId], references: [id])
+  subAgent AgwsSubAgent? @relation(fields: [subAgentId], references: [id])
+  channel  AgwsChannel?  @relation(fields: [channelId], references: [id])
+  dmUser   AgwsUser?     @relation("DmUser", fields: [dmUserId], references: [id])
+  messages AgwsMessage[]
+
+  @@map("agws_conversations")
+}
+
+enum ConversationType {
+  CHANNEL_THREAD
+  DIRECT_MESSAGE
+}
+
+// ──────────────────────────────────────────────────────────────
+// MESSAGES
+// ──────────────────────────────────────────────────────────────
+
+model AgwsMessage {
+  id              String      @id @default(cuid())
+  conversationId  String
+  authorId        String?     // null = agent message
+  authorType      AuthorType
+  agentId         String?     // which agent sent it (if agent)
+  content         String      // markdown
+  contentType     ContentType @default(TEXT)
+  isStreaming     Boolean     @default(false)
+  editedAt        DateTime?
+  deletedAt       DateTime?
+  metadata        Json?
+  parentMessageId String?
+  createdAt       DateTime    @default(now())
+
+  conversation AgwsConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author       AgwsUser?        @relation(fields: [authorId], references: [id])
+  attachments  AgwsAttachment[]
+  reactions    AgwsReaction[]
+
+  @@map("agws_messages")
+}
+
+enum AuthorType {
+  USER
+  AGENT
+  SYSTEM
+}
+
+enum ContentType {
+  TEXT
+  MARKDOWN
+  SYSTEM_EVENT
+}
+
+// ──────────────────────────────────────────────────────────────
+// ATTACHMENTS
+// ──────────────────────────────────────────────────────────────
+
+model AgwsAttachment {
+  id         String   @id @default(cuid())
+  messageId  String
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  blobUrl    String
+  sasUrl     String?
+  uploadedAt DateTime @default(now())
+
+  message AgwsMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("agws_attachments")
+}
+
+// ──────────────────────────────────────────────────────────────
+// REACTIONS
+// ──────────────────────────────────────────────────────────────
+
+model AgwsReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message AgwsMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    AgwsUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@map("agws_reactions")
+}
+
+// ──────────────────────────────────────────────────────────────
+// AUDIT LOG
+// ──────────────────────────────────────────────────────────────
+
+model AgwsAuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  action       String
+  resourceId   String?
+  resourceType String?
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user AgwsUser? @relation(fields: [userId], references: [id])
+
+  @@map("agws_audit_logs")
+}
