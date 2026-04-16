@@ -1,6 +1,5 @@
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
   },
@@ -16,7 +15,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Ensure streaming responses work correctly
   async headers() {
     return [
       {
