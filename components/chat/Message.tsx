@@ -21,6 +21,38 @@ import { formatTime } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
 import type { MessageWithAuthor } from '@/lib/types'
 
+// Lightweight message shape used in page-level state (subset of MessageWithAuthor)
+export interface MessageData {
+  id: string
+  content: string
+  authorType: 'USER' | 'AGENT' | 'SYSTEM'
+  authorId?: string | null
+  agentId?: string | null
+  agentName?: string | null
+  agentAvatarUrl?: string | null
+  agentBrandColor?: string | null
+  isStreaming?: boolean
+  createdAt: Date
+  author?: {
+    displayName: string
+    avatarUrl?: string | null
+  } | null
+  attachments?: Array<{
+    id: string
+    fileName: string
+    fileSize: number
+    mimeType: string
+    blobUrl: string
+    sasUrl?: string | null
+  }>
+  reactions?: Array<{
+    emoji: string
+    count: number
+    userIds: string[]
+    hasReacted: boolean
+  }>
+}
+
 interface MessageProps {
   message: MessageWithAuthor
   currentUserId: string
