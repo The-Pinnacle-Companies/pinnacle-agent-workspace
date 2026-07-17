@@ -41,7 +41,7 @@ export default async function HomePage() {
     take: 8,
   })
 
-  const firstName = session.user.name?.split(' ')[0] || 'there'
+  const firstName = session.user.displayName?.split(' ')[0] || 'there'
 
   return (
     <div className="flex flex-col h-full">
