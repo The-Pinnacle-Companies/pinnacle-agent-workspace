@@ -10,7 +10,7 @@ export default async function HomePage() {
   const session = await auth()
   if (!session?.user) redirect('/login')
 
-  const agents = await getUserAgents(session.user)
+  const agents = await getUserAgents(session.user.id)
 
   // Get recent messages across all accessible agents
   const recentConversations = await prisma.agwsConversation.findMany({
