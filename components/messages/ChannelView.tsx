@@ -5,7 +5,7 @@ import Pusher from 'pusher-js'
 import { MessageList } from './MessageList'
 import { MessageComposer } from './MessageComposer'
 import { AgentHeader } from '@/components/agents/AgentHeader'
-import type { MessageWithAuthor } from '@/lib/types'
+import type { MessageWithAuthor, AgentWithChannels } from '@/lib/types'
 import type { AgwsAgent, AgwsChannel } from '@prisma/client'
 
 interface ChannelViewProps {
@@ -309,7 +309,7 @@ export function ChannelView({
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       <AgentHeader
-        agent={agent}
+        agent={{ ...agent, channels: [] } as AgentWithChannels}
         compact
         channelName={`#${channel.name}`}
         channelDescription={channel.description ?? undefined}

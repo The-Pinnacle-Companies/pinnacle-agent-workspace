@@ -92,7 +92,7 @@ export async function uploadFile(params: UploadFileParams): Promise<UploadFileRe
 
   // Ensure container exists
   await containerClient.createIfNotExists({
-    access: 'private',
+    access: undefined,
   })
 
   const blobName = generateBlobName(fileName)

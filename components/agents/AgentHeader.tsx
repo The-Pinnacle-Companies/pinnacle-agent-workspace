@@ -1,5 +1,6 @@
 'use client'
 
+import type React from 'react'
 import { Settings } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -12,9 +13,14 @@ import type { AgentAccessRole } from '@prisma/client'
 interface AgentHeaderProps {
   agent: AgentWithChannels
   userRole?: AgentAccessRole | null
+  compact?: boolean
+  channelName?: string
+  channelDescription?: string
+  icon?: React.ReactNode
+  actions?: React.ReactNode
 }
 
-export function AgentHeader({ agent, userRole }: AgentHeaderProps) {
+export function AgentHeader({ agent, userRole, compact, channelName, channelDescription }: AgentHeaderProps) {
   const canManage = userRole === 'AGENT_ADMIN'
   const brandColor = agent.brandColor ?? '#7C3AED'
 

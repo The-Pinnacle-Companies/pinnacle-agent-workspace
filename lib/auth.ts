@@ -40,6 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     MicrosoftEntraID({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
+      // @ts-expect-error tenantId is a valid MicrosoftEntraID option but not typed in this version
       tenantId: process.env.AZURE_AD_TENANT_ID!,
       authorization: {
         params: {
@@ -157,7 +158,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user = {
         id: token.dbUserId ?? '',
         email: token.email ?? session.user?.email ?? '',
-        displayName: token.name ?? session.user?.name ?? '',
+        displayName: token.name ?? (session.user as { name?: string })?.name ?? '',
         role: token.role ?? 'MEMBER',
         entraId: token.entraId ?? token.sub ?? '',
         image: session.user?.image ?? null,

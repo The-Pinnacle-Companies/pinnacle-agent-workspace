@@ -126,6 +126,7 @@ export class AdapterTimeoutError extends Error {
 export interface OpenClawAdapterConfig {
   gatewayUrl: string   // e.g. "https://friday.collectivedg.com"
   authToken: string
+  agentId?: string
   timeoutMs?: number   // default 30000
 }
 

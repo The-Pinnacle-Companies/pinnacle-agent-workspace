@@ -69,7 +69,8 @@ export async function PATCH(req: Request, { params }: RouteParams) {
 
     const agent = await prisma.agwsAgent.update({
       where: { id: agentId },
-      data: result.data,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: result.data as any,
     })
 
     await prisma.agwsAuditLog.create({

@@ -91,7 +91,8 @@ export async function POST(req: Request) {
         shortTagline: data.shortTagline,
         brandColor: data.brandColor,
         adapterType: data.adapterType,
-        adapterConfig: data.adapterConfig ?? undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        adapterConfig: (data.adapterConfig ?? undefined) as any,
         openclawGateway: data.openclawGateway,
         openclawAgentId: data.openclawAgentId,
         capabilities: data.capabilities,

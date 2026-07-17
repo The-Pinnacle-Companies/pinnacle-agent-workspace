@@ -20,7 +20,8 @@ export async function GET(req: Request) {
     const from = url.searchParams.get('from')
     const to = url.searchParams.get('to')
 
-    const where: Parameters<typeof prisma.agwsAuditLog.findMany>[0]['where'] = {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {}
 
     if (filterUserId) where.userId = filterUserId
     if (filterAction) where.action = { contains: filterAction, mode: 'insensitive' }
