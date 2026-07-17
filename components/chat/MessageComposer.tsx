@@ -20,11 +20,24 @@ import {
 import { FileUploadZone } from '@/components/chat/FileUploadZone'
 import { cn } from '@/lib/utils'
 
+export interface PendingFile {
+  id: string
+  file: File
+  preview?: string
+  uploading?: boolean
+  error?: string
+}
+
 interface MessageComposerProps {
-  onSend: (content: string, attachments: File[]) => Promise<void>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSend: (content: string, attachments?: any[]) => Promise<void>
   isDisabled?: boolean
+  /** Alias for isDisabled */
+  disabled?: boolean
   placeholder?: string
   agentColor?: string
+  /** Alias for agentColor */
+  brandColor?: string
   agentName?: string
 }
 
@@ -75,11 +88,16 @@ function FileChip({
 
 export function MessageComposer({
   onSend,
-  isDisabled = false,
+  isDisabled: isDisabledProp = false,
+  disabled = false,
   placeholder,
-  agentColor = '#7C3AED',
+  agentColor: agentColorProp = '#7C3AED',
+  brandColor,
   agentName = 'Agent',
 }: MessageComposerProps) {
+  const isDisabled = isDisabledProp || disabled
+  const agentColor = brandColor ?? agentColorProp
+
   const [content, setContent] = useState('')
   const [attachments, setAttachments] = useState<File[]>([])
   const [isSending, setIsSending] = useState(false)

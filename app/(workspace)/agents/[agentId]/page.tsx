@@ -23,7 +23,7 @@ export default async function AgentPage({ params }: Params) {
 
   const { agentId } = params
 
-  const hasAccess = await canAccessAgent(session.user, agentId)
+  const hasAccess = await canAccessAgent(session.user.id, agentId)
   if (!hasAccess) notFound()
 
   const agent = await prisma.agwsAgent.findUnique({

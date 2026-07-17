@@ -7,12 +7,17 @@ import { Message } from '@/components/chat/Message'
 import { ThinkingIndicator } from '@/components/chat/ThinkingIndicator'
 import { isSameDay, formatDateLabel } from '@/lib/date-utils'
 import { cn } from '@/lib/utils'
-import type { MessageWithAuthor } from '@/lib/types'
+import type { MessageData } from '@/components/chat/Message'
 
 interface MessageListProps {
-  messages: MessageWithAuthor[]
-  isAgentThinking: boolean
-  agentColor: string
+  messages: MessageData[]
+  /** Also accepts isThinking as alias */
+  isAgentThinking?: boolean
+  isThinking?: boolean
+  thinkingDetail?: string
+  /** Also accepts agentBrandColor as alias */
+  agentColor?: string
+  agentBrandColor?: string
   agentName?: string
   onLoadMore: () => Promise<void>
   hasMore: boolean
@@ -28,7 +33,7 @@ interface ListItem {
   type: 'date-divider' | 'unread-separator' | 'message' | 'thinking'
   id: string
   date?: string
-  message?: MessageWithAuthor
+  message?: MessageData
 }
 
 function DateDivider({ label }: { label: string }) {
@@ -56,7 +61,10 @@ function UnreadSeparator() {
 export function MessageList({
   messages,
   isAgentThinking,
+  isThinking,
+  thinkingDetail: _thinkingDetail,
   agentColor,
+  agentBrandColor,
   agentName = 'Agent',
   onLoadMore,
   hasMore,
@@ -67,6 +75,8 @@ export function MessageList({
   onEdit,
   onDelete,
 }: MessageListProps) {
+  const resolvedThinking = isThinking ?? isAgentThinking ?? false
+  const resolvedColor = agentBrandColor ?? agentColor ?? '#7C3AED'
   const virtuosoRef = useRef<VirtuosoHandle>(null)
   const isAtBottomRef = useRef(true)
   const prevMessageCountRef = useRef(messages.length)
@@ -101,7 +111,7 @@ export function MessageList({
   })
 
   // Add thinking indicator as a list item if active
-  if (isAgentThinking) {
+  if (resolvedThinking) {
     listItems.push({
       type: 'thinking',
       id: 'thinking-indicator',
@@ -122,13 +132,13 @@ export function MessageList({
 
   // Scroll to bottom when thinking starts
   useEffect(() => {
-    if (isAgentThinking && isAtBottomRef.current) {
+    if (resolvedThinking && isAtBottomRef.current) {
       virtuosoRef.current?.scrollToIndex({
         index: listItems.length - 1,
         behavior: 'smooth',
       })
     }
-  }, [isAgentThinking, listItems.length])
+  }, [resolvedThinking, listItems.length])
 
   const handleStartReached = useCallback(() => {
     if (hasMore) {
@@ -158,7 +168,7 @@ export function MessageList({
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.2 }}
             >
-              <ThinkingIndicator agentName={agentName} agentColor={agentColor} />
+              <ThinkingIndicator agentName={agentName} agentColor={resolvedColor} />
             </motion.div>
           </AnimatePresence>
         )
@@ -168,9 +178,9 @@ export function MessageList({
         return (
           <Message
             key={item.id}
-            message={item.message}
+            message={item.message as any}
             currentUserId={currentUserId}
-            agentColor={agentColor}
+            agentColor={resolvedColor}
             onReact={onReact}
             onReply={onReply}
             onEdit={onEdit}
@@ -181,10 +191,10 @@ export function MessageList({
 
       return null
     },
-    [listItems, agentName, agentColor, currentUserId, onReact, onReply, onEdit, onDelete]
+    [listItems, agentName, resolvedColor, currentUserId, onReact, onReply, onEdit, onDelete]
   )
 
-  if (messages.length === 0 && !isAgentThinking) {
+  if (messages.length === 0 && !resolvedThinking) {
     return null
   }
 

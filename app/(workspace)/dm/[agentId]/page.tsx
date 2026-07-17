@@ -116,7 +116,7 @@ export default function DMPage() {
       authorId: session?.user.id,
       createdAt: new Date(),
       author: {
-        displayName: session?.user.name || 'You',
+        displayName: session?.user.displayName || 'You',
         avatarUrl: session?.user.image,
       },
     }

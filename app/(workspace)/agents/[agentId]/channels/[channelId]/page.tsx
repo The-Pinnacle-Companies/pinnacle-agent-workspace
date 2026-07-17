@@ -110,7 +110,7 @@ export default function ChannelPage() {
       authorId: session?.user.id,
       createdAt: new Date(),
       author: {
-        displayName: session?.user.name || 'You',
+        displayName: session?.user.displayName || 'You',
         avatarUrl: session?.user.image,
       },
     }
@@ -217,20 +217,30 @@ export default function ChannelPage() {
   }
 
   const handleReact = async (messageId: string, emoji: string) => {
+    const userId = session?.user.id || ''
     // Optimistic update
     setMessages((prev) =>
       prev.map((m) => {
         if (m.id !== messageId) return m
         const reactions = [...(m.reactions || [])]
-        const existing = reactions.find(
-          (r) => r.emoji === emoji && r.userId === session?.user.id
-        )
+        const existing = reactions.find((r) => r.emoji === emoji)
         if (existing) {
-          return { ...m, reactions: reactions.filter((r) => r !== existing) }
+          const hasIt = existing.userIds.includes(userId)
+          return {
+            ...m,
+            reactions: reactions.map((r) =>
+              r.emoji !== emoji ? r : {
+                ...r,
+                count: hasIt ? r.count - 1 : r.count + 1,
+                userIds: hasIt ? r.userIds.filter((id) => id !== userId) : [...r.userIds, userId],
+                hasReacted: !hasIt,
+              }
+            ).filter((r) => r.count > 0),
+          }
         }
         return {
           ...m,
-          reactions: [...reactions, { emoji, userId: session?.user.id || '' }],
+          reactions: [...reactions, { emoji, count: 1, userIds: [userId], hasReacted: true }],
         }
       })
     )
